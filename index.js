@@ -1,12 +1,12 @@
 'use strict';
 
-var crypto = require('crypto');
-var util = require('util');
-var uuid = require('uuid');
-var EventEmitter = require('events').EventEmitter;
+let crypto = require('crypto');
+let util = require('util');
+let uuid = require('uuid');
+let EventEmitter = require('events').EventEmitter;
 
 // Make the key less prone to collision
-var hashKey = function(key) {
+let hashKey = function (key) {
   return 'leader:' + crypto.createHash('sha1').update(key).digest('hex');
 };
 
@@ -62,13 +62,9 @@ Leader.prototype.elect = function elect() {
   }.bind(this));
 };
 
-Leader.prototype.isLeader = function isLeader(done) {
-  this.redis.get(this.key, function(err, id) {
-    if(err) {
-      return done(err);
-    }
-    done(null, (id === this.id));
-  }.bind(this));
+Leader.prototype.isLeader = async function isLeader() {
+  let id = await this.redis.get(this.key);
+  return id === this.id;
 };
 
 /**
