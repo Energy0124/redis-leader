@@ -26,21 +26,20 @@ util.inherits(Leader, EventEmitter);
 /**
  * Renew leader as elected
  */
-Leader.prototype._renew = function _renew() {
+Leader.prototype._renew = async function _renew() {
   // it is safer to check we are still leader
-  this.isLeader(function(err, isLeader) {
-    if(isLeader) {
-      this.redis.pexpire(this.key, this.options.ttl, function(err) {
-        if(err) {
-          this.emit('error', err);
-        }
-      }.bind(this));
-    } else {
-      clearInterval(this.renewId);
-      this.electId = setTimeout(Leader.prototype.elect.bind(this), this.options.wait);
-      this.emit('revoked');
-    }
-  }.bind(this));
+  let isLeader = await this.isLeader();
+  if (isLeader) {
+    this.redis.pexpire(this.key, this.options.ttl, function (err) {
+      if (err) {
+        this.emit('error', err);
+      }
+    }.bind(this));
+  } else {
+    clearInterval(this.renewId);
+    this.electId = setTimeout(Leader.prototype.elect.bind(this), this.options.wait);
+    this.emit('revoked');
+  }
 };
 
 /**
